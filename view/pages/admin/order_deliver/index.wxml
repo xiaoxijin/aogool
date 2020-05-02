@@ -1,0 +1,61 @@
+<navbar parameter='{{parameter}}'></navbar>
+  <view class="deliver-goods">
+    <view class="header">
+      <view class="order-num acea-row row-between-wrapper">
+        <view class="num line1">订单号：{{ order_id }}</view>
+        <view class="name line1">
+          <span class="iconfont icon-yonghu2"></span>{{ delivery.nickname }}
+        </view>
+      </view>
+      <view class="address">
+        <view class="name">
+          {{ delivery.real_name}}<span class="phone">{{ delivery.user_phone }}</span>
+        </view>
+        <view>{{ delivery.user_address }}</view>
+      </view>
+      <view class="line"><image src="/images/line.jpg"></image></view>
+    </view>
+    <form bindsubmit="formSubmit" report-submit='true'>
+      <view class="wrapper">
+          <view class="item acea-row row-between-wrapper">
+            <view>发货方式</view>
+            <view class="mode acea-row row-middle row-between">
+              <view
+                class="{{active === index ? 'on' : ''}} goods"
+                wx:for="{{types}}" wx:key='index'
+                bindtap="changeType" data-rows="{{item}}" data-indexs="{{index}}">
+                {{ item.title }}<span class="iconfont icon-xuanzhong2"></span>
+              </view>
+            </view>
+          </view>
+          <view class="list" wx:if="{{active === 0}}">
+            <view class="item acea-row row-between-wrapper">
+              <view>发货方式：</view>
+              <picker class='mode' bindchange="bindPickerChange" value="{{index}}" range="{{logistics}}">
+                  <view class="picker acea-row row-right">
+                    <view class='reason'>{{logistics[index]}}</view>
+                    <text class='iconfont icon-jiantou'></text>
+                  </view>
+              </picker>
+            </view>
+            <view class="item acea-row row-between-wrapper">
+              <view>快递单号</view>
+              <input type="text" placeholder="填写快递单号" name='delivery_id' value="{{delivery_id}}" placeholder-class='placeholder' class="mode"/>
+            </view>
+          </view>
+          <view class="list" wx:if="{{active === 1}}">
+            <view class="item acea-row row-between-wrapper">
+              <view>送货人</view>
+              <input type="text" placeholder="填写送货人" class="mode" name='delivery_name' value="{{delivery_name}}" placeholder-class='placeholder'/>
+            </view>
+            <view class="item acea-row row-between-wrapper">
+              <view>送货电话</view>
+              <input type="text" placeholder="填写送货电话" class="mode" name='delivery_phone' value="{{delivery_phone}}" placeholder-class='placeholder'/>
+            </view>
+          </view>
+      </view>
+      <view style="height:1.2rem;"></view>
+      <button class="confirm" formType="submit">确认提交</button>
+    </form>
+  </view>
+<authorize bind:onLoadFun='onLoadFun'></authorize>

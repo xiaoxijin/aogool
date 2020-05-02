@@ -1,0 +1,79 @@
+<navbar parameter='{{parameter}}'></navbar>
+<view class="order-index" ref="container">
+    <view class="header acea-row">
+      <navigator class="item acea-row row-column" url='/pages/admin/order_list/index?orderStatus=0' hover-class='none'>
+        <view class="num">{{census.unpaid_count}}</view>
+        <view>待付款</view>
+      </navigator>
+      <navigator class="item acea-row row-column" url='/pages/admin/order_list/index?orderStatus=1' hover-class='none'>
+        <view class="num">{{ census.unshipped_count }}</view>
+        <view>待发货</view>
+      </navigator> 
+      <navigator class="item acea-row row-column" url='/pages/admin/order_list/index?orderStatus=2' hover-class='none'>
+        <view class="num">{{ census.received_count }}</view>
+        <view>待收货</view>
+      </navigator>
+      <navigator class="item acea-row row-column" url='/pages/admin/order_list/index?orderStatus=3' hover-class='none'>
+        <view class="num">{{ census.evaluated_count }}</view>
+        <view>待评价</view>
+      </navigator>
+      <navigator class="item acea-row row-column" url='/pages/admin/order_list/index?orderStatus=-3' hover-class='none'>
+        <view class="num">{{ census.refund_count }}</view>
+        <view>退款</view>
+      </navigator>
+    </view>
+    <view class="wrapperBox">
+      <view class="wrapper">
+        <view class="title">
+          <span class="iconfont icon-shujutongji"></span>数据统计
+        </view>
+        <view class="list acea-row">
+          <navigator class="item acea-row row-column" url='/pages/admin/order_statistics/index?type=1&time=today' hover-class='none'>
+            <view class="num">{{ census.todayPrice }}</view>
+            <view class="titles">今日成交额</view>
+          </navigator>
+          <navigator class="item acea-row row-column" url='/pages/admin/order_statistics/index?type=1&time=yesterday' hover-class='none'>
+            <view class="num">{{ census.proPrice }}</view>
+            <view class="titles">昨日成交额</view>
+          </navigator>
+          <navigator class="item acea-row row-column" url='/pages/admin/order_statistics/index?type=1&time=month' hover-class='none'>
+            <view class="num">{{ census.monthPrice }}</view>
+            <view class="titles">本月成交额</view>
+          </navigator>
+          <navigator class="item acea-row row-column" url='/pages/admin/order_statistics/index?type=2&time=today' hover-class='none'>
+            <view class="num">{{ census.todayCount }}</view>
+            <view class="titles">今日订单数</view>
+          </navigator>
+          <navigator class="item acea-row row-column" url='/pages/admin/order_statistics/index?type=2&time=yesterday' hover-class='none'>
+            <view class="num">{{ census.proCount }}</view>
+            <view class="titles">昨日订单数</view>
+          </navigator>
+          <navigator class="item acea-row row-column" url='/pages/admin/order_statistics/index?type=2&time=month' hover-class='none'>
+            <view class="num">{{ census.monthCount }}</view>
+            <view class="titles">本月订单数</view>
+          </navigator>
+        </view>
+      </view>
+      <view class="wrapper public-wrapper">
+        <view class="title">
+          <span class="iconfont icon-shujutongji"></span>详细数据
+        </view>
+        <view class="nav acea-row row-between-wrapper">
+          <view class="data">日期</view>
+          <view class="browse">订单数</view>
+          <view class="turnover">成交额</view>
+        </view>
+        <view class="conter">
+          <view class="item acea-row row-between-wrapper" wx:for="{{dataList}}"  wx:key='index'>
+            <view class="data">{{ item.time }}</view>
+            <view class="browse">{{ item.count }}</view>
+            <view class="turnover">{{ item.price }}</view>
+          </view>
+        </view>
+        <view class='loadingicon acea-row row-center-wrapper' wx:if="{{loading}}">
+            <text class='loading iconfont icon-jiazai' hidden='{{loading==false}}'></text>{{loadTitle}}
+        </view>
+      </view>
+    </view>
+</view>
+<authorize bind:onLoadFun='onLoadFun'></authorize>

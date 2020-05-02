@@ -1,0 +1,11 @@
+<navbar parameter='{{parameter}}'></navbar>
+<view class="calendar-wrapper">
+  <view class="calendar">
+    <calendar 
+      mode="range"
+      begin="[1992, 5, 20]"
+      end="[2049, 5, 20]"  bind:onRangePick = 'onPickDay'
+      ></calendar>
+  </view>
+</view>
+<!-- <view class='mask' catchtouchmove="true" hidden='{{current==false}}' bindtap='close'></view> -->

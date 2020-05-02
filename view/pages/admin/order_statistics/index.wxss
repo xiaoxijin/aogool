@@ -1,0 +1,70 @@
+.statistical-page .navs{width:100%;height:96rpx;background-color:#fff;overflow:hidden;line-height:96rpx;position:fixed;top:9.7%;left:0;z-index:99;}
+.statistical-page .navs .list{overflow-y:hidden;overflow-x:auto;white-space: nowrap;-webkit-overflow-scrolling: touch;width: 100%;}
+.statistical-page .navs .item{font-size:32rpx;color:#282828;margin-left:60rpx;display: inline-block;line-height: 96rpx;}
+.statistical-page .navs .on{color:#2291f8;}
+.statistical-page .navs .item .iconfont{font-size:25rpx;margin-left:13rpx;}
+.statistical-page .wrapper{width:740rpx;background-color:#fff;border-radius:10rpx;margin:96rpx auto 0 auto;padding:50rpx 60rpx;margin-top: 108rpx;}
+.statistical-page .wrapper .title{font-size:30rpx;color:#999;text-align:center;}
+.statistical-page .wrapper .money{font-size:72rpx;color:#fba02a;text-align:center;margin-top:10rpx;}
+.statistical-page .wrapper .increase{font-size:28rpx;color:#999;margin-top:20rpx;}
+.statistical-page .wrapper .increase .red{color:#ff6969;}
+.statistical-page .wrapper .increase .green{color:#1abb1d;}
+.statistical-page .wrapper .increase .iconfont{font-size:23rpx;margin-left:15rpx;}
+.statistical-page .chart{width:690rpx;height:480rpx;background-color:#fff;border-radius:10rpx;margin:18rpx auto 0 auto;padding: 25rpx 22rpx 0 22rpx;position: relative;}
+.statistical-page .chart .company{font-size:26rpx;color:#999;}
+.statistical-page .mc-body{padding-bottom:0;}
+.statistical-page .mc-body tr{background-color: #edf8fe;border-top: 1px solid #fff;width:100%;}
+.statistical-page .calendar-wrapper{min-width:100%;}
+.statistical-page .calendar-wrapper table{margin:0;}
+.statistical-page .calendar-wrapper td{border-right:1px solid #fff;padding:0;width:14%!important;}
+.statistical-page .calendar-tools{box-shadow:unset;-webkit-box-shadow:unset;-o-box-shadow:unset;-moz-box-shadow:unset;}
+.statistical-page .mc-head-box div{font-size: 28rpx;}
+.statistical-page .calendar-wrapper td:not(.disabled) span.mc-date-red{color:unset;}
+.statistical-page .calendar-wrapper .mc-range-mode .mc-range-end span.calendar-date, .statistical-page .calendar-wrapper .mc-range-mode .mc-range-begin span.calendar-date{
+    border-radius:0;background-color:#2291f8!important;
+}
+.statistical-page .calendar-wrapper td.selected span.mc-date-red{color:#fff;}
+.statistical-page .mc-range-mode .selected .mc-range-bg{background-color:#a0dcf9;}
+.statistical-page .calendar-wrapper .mc-range-mode .mc-range-row-last .calendar-date,.statistical-page .calendar-wrapper .mc-range-mode .mc-range-row-first .calendar-date{
+    background-color:#a0dcf9;
+}
+.statistical-page .calendar-wrapper .mc-range-mode .selected.mc-range-second-to-last span{background-color:#a0dcf9;}
+.statistical-page .calendar-wrapper .mc-range-mode .mc-range-month-first.selected .calendar-date, .statistical-page .calendar-wrapper .mc-range-mode .mc-range-month-last.selected .calendar-date{
+    background-color:#a0dcf9;
+}
+.wrapperBox{width: 100%;border-radius: 10rpx;padding: 0 30rpx;box-sizing: border-box;margin-top: 18rpx;}
+.public-wrapper{background-color: #fff;width: 100%;padding: 38rpx 30rpx;}  
+.public-wrapper .title{font-size:30rpx;color:#282828;margin-bottom:40rpx;}
+.public-wrapper .title .iconfont{color:#2291f8;font-size:40rpx;margin-right:19rpx;vertical-align:middle;}
+.public-wrapper .list .item{width:33.33%;text-align:center;font-size:24rpx;color:#999;margin-bottom:45rpx;}
+.public-wrapper .list .item .num{font-size:40rpx;color:#333;margin-bottom: 1rpx;}
+.public-wrapper .list .item .titles{color: #999;}
+.public-wrapper .nav{font-size:24rpx;color:#999;border-bottom:1px solid #f7f7f7;height:70rpx;line-height: 70rpx;}
+.public-wrapper .data{width:210rpx;text-align:left;}
+.public-wrapper .browse{width:192rpx;text-align:right;}
+.public-wrapper .turnover{width:227rpx;text-align:right;}
+.public-wrapper .conter .item{border-bottom:1px solid #f7f7f7;height:70rpx;font-size:24rpx;line-height: 70rpx;}
+.public-wrapper .conter .item .turnover{color:#d84242;}
+.statistical-page .mc-today-element .calendar-date{border-radius:0;background-color:unset;}
+.calendar-wrapper{position:fixed;bottom:0;width:100%;left:0;background-color:#fff;z-index:99999999;border-radius:16rpx 16rpx 0 0;padding-bottom:10rpx;transform:translate3d(0,100%,0);transition:all .3s cubic-bezier(.25,.5,.5,.9);}
+.onShow{transform:translate3d(0,0,0);}
+.echarts {
+  width: 100%;
+  height: 550rpx;
+}
+.box{
+	width: 100%;
+  height: 85%;
+}
+.cover-view{ position: absolute;
+  top: calc(50% - 150rpx);
+  left: calc(50% - 300rpx);}
+.mask{z-index: 10000;}
+.mychart-one>div{z-index: 1;}
+
+
+
+
+
+
+

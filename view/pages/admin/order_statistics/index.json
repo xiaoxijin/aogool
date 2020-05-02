@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "navbar": "/components/navbar/index",
+    "authorize": "/components/authorize/authorize",
+    "ec-canvas":"./../components/ec-canvas/ec-canvas",
+    "calendar": "./../components/calendar/calendar"
+  }
+}

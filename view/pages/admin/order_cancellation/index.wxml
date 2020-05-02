@@ -1,0 +1,26 @@
+<navbar parameter='{{parameter}}'></navbar>
+<view class="OrderCancellation">
+    <view class="header"></view>
+    <view class="whiteBg">
+      <view class="input">
+        <input type="number" placeholder="0" bindinput="bindCode" data-name="verify_code" value='{{verify_code}}'/>
+      </view>
+      <view class="bnt" bindtap="codeChange">立即核销</view>
+    </view>
+    <view class="scan" bindtap="scanCode">
+      <image src="/images/scan.gif"></image>
+    </view>
+</view>
+<view wx:if="{{iShidden}}">
+    <view class="WriteOff">
+      <view class="pictrue"><image src="{{orderInfo.image}}" /></view>
+      <view class="num acea-row row-center-wrapper">
+        <text>{{ orderInfo.order_id }}</text>
+        <view class="views" bindtap='goOrderDetails' data-order_id="{{orderInfo.order_id}}">查看<text class='iconfont icon-jiantou views-jian'></text></view>
+      </view>
+      <view class="tip">确定要核销此订单吗？</view>
+      <view class="sure" bindtap="confirm">确定核销</view>
+      <view class="sure cancel" bindtap="cancel">取消</view>
+    </view>
+    <view class="mask"></view>
+</view>

@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "navbar": "/components/navbar/index",
+    "priceChange": "/components/price-change/index",
+    "authorize":"/components/authorize/authorize"
+  }
+}

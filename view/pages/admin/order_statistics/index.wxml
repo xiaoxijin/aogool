@@ -1,0 +1,89 @@
+<navbar parameter='{{parameter}}'></navbar>
+<view class="statistical-page">
+    <view class="navs cover-view">
+      <view class="list">
+        <view class="{{time === 'today' ? 'on' : ''}} item " bindtap="setTime" data-time="today">
+          今天
+        </view>
+        <view class="{{time === 'yesterday' ? 'on' : ''}} item" bindtap="setTime" data-time="yesterday">
+          昨天
+        </view>
+        <view class="{{time === 'seven' ? 'on' : ''}} item" bindtap="setTime" data-time="seven">
+          最近7天
+        </view>
+        <view class="{{time === 'month' ? 'on' : ''}} item" bindtap="setTime" data-time="month">
+          本月
+        </view>
+        <view  class="{{time === 'date' ? 'on' : ''}} item" bindtap="dateTitle">
+          <!-- <span class="iconfont icon-xiangxia"></span>
+          <span v-for="(value, index) in renderValues" :key="index">
+            {{ value }}</span
+          > -->
+          自定义
+        </view>
+      </view>
+    </view>
+    <view class="wrapper">
+      <view class="title">
+       {{title}}{{ type === '1' ? "营业额（元）" : "订单量（份）" }}
+      </view>
+      <view class="money">{{ time_price }}</view>
+      <view class="increase acea-row row-between-wrapper">
+        <view>
+          {{ title }}增长率：<span
+            class="{{increase_time_status === 1 ? 'red' : 'green'}}"
+            >{{ increase_time_status === 1 ? "" : "-" }}{{ growth_rate }}%
+            <span class="{{increase_time_status === 1? 'icon-xiangshang1': 'icon-xiangxia2'}} iconfont"></span>
+            </span>
+        </view>
+        <view>
+          {{ title }}增长：
+          <span class="{{increase_time_status === 1 ? 'red' : 'green'}}">
+            {{ increase_time_status === 1 ? "" : "-" }}{{ increase_time }}
+            <span class="{{increase_time_status === 1? 'icon-xiangshang1': 'icon-xiangxia2'}} iconfont"></span>
+          </span>
+        </view>
+      </view>
+    </view>
+    <view class="chart">
+      <view class="company">
+        {{type === '1' ? "单位（元）" : "单位（份）" }}
+      </view>
+      <view class="box">
+         <ec-canvas id="mychart-one" canvas-id="mychart-bar" ec="{{ ec }}"></ec-canvas>
+      </view>
+    </view>
+    <view class="wrapperBox">
+        <view class="public-wrapper">
+          <view class="title">
+            <span class="iconfont icon-shujutongji"></span>详细数据
+          </view>
+          <view class="nav acea-row row-between-wrapper">
+            <view class="data">日期</view>
+            <view class="browse">订单数</view>
+            <view class="turnover">成交额</view>
+          </view>
+          <view class="conter">
+            <view class="item acea-row row-between-wrapper" wx:for="{{dataList}}"  wx:key='index'>
+              <view class="data">{{ item.time }}</view>
+              <view class="browse">{{ item.count }}</view>
+              <view class="turnover">{{ item.price }}</view>
+            </view>
+          </view>
+          <view class='loadingicon acea-row row-center-wrapper' wx:if="{{loading}}">
+              <text class='loading iconfont icon-jiazai' hidden='{{loading==false}}'></text>{{loadTitle}}
+          </view>
+        </view>
+    </view>
+    <!-- <view class="{{current === true ? 'onShow' : ''}}  calendar-wrapper">
+      <view class="calendar">
+        <calendar 
+          mode="range"
+          begin="[1992, 5, 20]"
+          end="[2049, 5, 20]"  bind:onRangePick = 'onPickDay'
+          ></calendar>
+      </view>
+    </view>
+    <view class='mask' catchtouchmove="true" hidden='{{current==false}}' bindtap='close'></view> -->
+</view>
+<authorize bind:onLoadFun='onLoadFun'></authorize>

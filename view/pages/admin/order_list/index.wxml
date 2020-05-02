@@ -1,0 +1,88 @@
+<navbar parameter='{{parameter}}'></navbar>
+<view class="pos-order-list" ref="container">
+    <view class="nav acea-row row-around row-middle" style='top:{{navH}}rpx'>
+      <view class="item" class="{{orderStatus == 0 ? 'active':''}}" bindtap="changeStatus" data-status="0">
+        待付款
+      </view>
+      <view class="item" class="{{orderStatus == 1 ? 'active':''}}" bindtap="changeStatus" data-status="1">
+        待发货
+      </view>
+      <view class="item" class="{{orderStatus == 2 ? 'active':''}}" bindtap="changeStatus" data-status="2">
+        待收货
+      </view>
+      <view class="item" class="{{orderStatus == 3 ? 'active':''}}" bindtap="changeStatus" data-status="3">
+        待评价
+      </view>
+      <view class="item" class="{{orderStatus == 4 ? 'active':''}}" bindtap="changeStatus" data-status="4">
+        已完成
+      </view>
+      <view class="item" class="{{orderStatus == -3 ? 'active':''}}" bindtap="changeStatus" data-status="-3">
+        退款
+      </view>
+    </view>
+    <view class="list">
+      <view class="item" wx:for="{{orderList}}" wx:key='index'>
+        <view class="order-num acea-row row-middle" bindtap='goOrderDetails' data-order_id="{{item.order_id}}">
+          订单号：{{ item.order_id }}
+          <span class="time">下单时间：{{ item.add_time }}</span>
+        </view>
+        <view class="pos-order-goods" wx:for="{{item._info}}" wx:key='index' wx:for-item='itemn' wx:for-index='indexn'>
+          <view class="goods acea-row row-between-wrapper">
+            <view class="picTxt acea-row row-between-wrapper"  bindtap='goOrderDetails' data-order_id="{{item.order_id}}">
+              <view class="pictrue">
+                <image src='{{itemn.cart_info.productInfo.image}}'></image>
+              </view>
+              <view class="text acea-row row-between row-column">
+                <view class="info line2">
+                  {{ itemn.cart_info.productInfo.store_name }}
+                </view>
+                <view class="attr" wx:if='{{itemn.cart_info.productInfo.suk}}'>
+                  {{ itemn.cart_info.productInfo.suk }}
+                </view>
+              </view>
+            </view>
+            <view class="money">
+              <view class="x-money">￥{{ itemn.cart_info.productInfo.price }}</view>
+              <view class="num">x{{ itemn.cart_info.cart_num }}</view>
+              <view class="y-money">
+                ￥{{ itemn.cart_info.productInfo.ot_price }}
+              </view>
+            </view>
+          </view>
+        </view>
+        <view class="public-total">
+          共{{ item.total_num }}件商品，应支付
+          <span class="money">￥{{ item.pay_price }}</span> ( 邮费 ¥{{item.total_postage}})
+        </view>
+        <view class="operation acea-row row-between-wrapper">
+          <view class="more">
+            <!--            <div class="iconfont icon-gengduo" @click="more(index)"></div>-->
+            <!--            <div class="order" v-show="current === index">-->
+            <!--              <div class="items">-->
+            <!--                {{ where.status > 0 ? "删除" : "取消" }}订单-->
+            <!--              </div>-->
+            <!--              <div class="arrow"></div>-->
+            <!--            </div>-->
+          </view>
+          <view class="acea-row row-middle">
+            <view class="bnt" wx:if="{{orderStatus == 0}}" bindtap="modify" data-status="0" data-orderInfo="{{item}}">
+              一键改价
+            </view>
+            <view class="bnt" bindtap="modify" data-status="1" data-orderInfo="{{item}}">订单备注</view>
+            <view class="bnt" wx:if="{{orderStatus == -3 && item.refund_status === 1}}" bindtap="modify" data-status="0" data-orderInfo="{{item}}">
+              立即退款
+            </view>
+            <view class="bnt cancel" wx:if="{{item.pay_type === 'offline' && item.paid === 0}}" bindtap="offlinePay" data-orderInfo="{{item}}">
+              确认付款
+            </view>
+            <navigator class="bnt" url='/pages/admin/order_deliver/index?order_id={{item.order_id}}' wx:if="{{orderStatus == 1}}" hover-class='none'>去发货</navigator>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class='loadingicon acea-row row-center-wrapper' wx:if="{{loading}}">
+      <text class='loading iconfont icon-jiazai' hidden='{{loading==false}}'></text>{{loadTitle}}
+    </view>
+</view>
+<authorize bind:onLoadFun='onLoadFun'></authorize>
+<priceChange status="{{status}}" change="{{change}}" orderInfo="{{orderInfo}}"      bind:onChangeFun='onChangeFun'  bind:getIndex='getIndex' wx:if="{{orderInfo}}"></priceChange>

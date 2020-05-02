@@ -1,0 +1,128 @@
+<navbar parameter='{{parameter}}'></navbar>
+<view class="order-details pos-order-details">
+    <view class="header acea-row row-middle">
+      <view class="state">{{ title }}</view>
+      <view class="data">
+        <view class="order-num">订单：{{ orderInfo.order_id }}</view>
+        <view>
+          <span class="time">{{ orderInfo.add_time }}</span>
+        </view>
+      </view>
+    </view>
+    <view class="remarks acea-row row-between-wrapper" wx:if="{{goname!='look'}}">
+      <span class="iconfont icon-zhinengkefu-"></span>
+      <input type="button" class="line1" style="text-align: left;" value="{{orderInfo.remark ? orderInfo.remark : '订单未备注，点击添加备注信息'}}"/>
+    </view>
+    <view class="orderingUser acea-row row-middle">
+      <span class="iconfont icon-yonghu2"></span>{{ orderInfo.nickname }}
+    </view>
+    <view class="address">
+      <view class="name">
+        {{ orderInfo.real_name}}<span class="phone">{{ orderInfo.user_phone }}</span>
+      </view>
+      <view>{{ orderInfo.user_address }}</view>
+    </view>
+    <view class='line'><image src='/images/line.jpg'></image></view>
+    <view class="pos-order-goods">
+      <view class="goods acea-row row-between-wrapper" wx:for="{{orderInfo._info}}"  wx:key='index'>
+        <view class="picTxt acea-row row-between-wrapper">
+          <view class="pictrue">
+            <image src='{{item.cart_info.productInfo.image}}'></image>
+          </view>
+          <view class="text acea-row row-between row-column">
+            <view class="info line2">
+              {{ item.cart_info.productInfo.store_name }}
+            </view>
+            <view class="attr">{{ item.cart_info.productInfo.suk }}</view>
+          </view>
+        </view>
+        <view class="money">
+          <view class="x-money">￥{{ item.cart_info.productInfo.price }}</view>
+          <view class="num">x{{ item.cart_info.cart_num }}</view>
+          <view class="y-money">￥{{ item.cart_info.productInfo.ot_price }}</view>
+        </view>
+      </view>
+    </view>
+    <view class="public-total">
+      共{{ orderInfo.total_num }}件商品，应支付
+      <span class="money">￥{{ orderInfo.pay_price }}</span> ( 邮费 ¥{{
+        orderInfo.pay_postage
+      }}
+      )
+    </view>
+    <view class="wrapper">
+      <view class="item acea-row row-between">
+        <view>订单编号：</view>
+        <view class="conter acea-row row-middle row-right">
+          {{ orderInfo.order_id}}
+          <span class="copy copy-data" bindtap='copyOrderId' >复制</span>
+        </view>
+      </view>
+      <view class="item acea-row row-between">
+        <view>下单时间：</view>
+        <view class="conter">{{ orderInfo.add_time }}</view>
+      </view>
+      <view class="item acea-row row-between">
+        <view>支付状态：</view>
+        <view class="conter">
+          {{ orderInfo.paid == 1 ? "已支付" : "未支付" }}
+        </view>
+      </view>
+      <view class="item acea-row row-between">
+        <view>支付方式：</view>
+        <view class="conter">{{ payType }}</view>
+      </view>
+      <view class="item acea-row row-between">
+        <view>买家留言：</view>
+        <view class="conter">{{ orderInfo.mark }}</view>
+      </view>
+    </view>
+    <view class="wrapper">
+      <view class="item acea-row row-between">
+        <view>支付金额：</view>
+        <view class="conter">￥{{ orderInfo.total_price }}</view>
+      </view>
+      <view class="item acea-row row-between">
+        <view>优惠券抵扣：</view>
+        <view class="conter">-￥{{ orderInfo.coupon_price }}</view>
+      </view>
+      <view class="item acea-row row-between">
+        <view>运费：</view>
+        <view class="conter">￥{{ orderInfo.freight_price }}</view>
+      </view>
+      <view class="actualPay acea-row row-right">
+        实付款：<span class="money font-color-red">￥{{ orderInfo.pay_price }}</span>
+      </view>
+    </view>
+    <view class="wrapper" wx:if="{{orderInfo.delivery_type != 'fictitious' && orderInfo._status._type === 2}}">
+      <view class="item acea-row row-between">
+        <view>配送方式：</view>
+        <view class="conter" wx:if="{{orderInfo.delivery_type === 'express'}}">快递</view>
+        <view class="conter" wx:if="{{orderInfo.delivery_type === 'send'}}">送货</view>
+      </view>
+      <view class="item acea-row row-between">
+        <view wx:if="{{orderInfo.delivery_type === 'express'}}">快递公司：</view>
+        <view wx:if="{{orderInfo.delivery_type === 'send'}}">送货人：</view>
+        <view class="conter">{{ orderInfo.delivery_name }}</view>
+      </view>
+      <view class="item acea-row row-between">
+        <view wx:if="{{orderInfo.delivery_type === 'express'}}">快递单号：</view>
+        <view wx:if="{{orderInfo.delivery_type === 'send'}}">送货人电话：</view>
+        <view class="conter">
+          {{ orderInfo.delivery_id}}
+          <span class="copy copy-data"  bindtap='copyOrderId'>复制</span>
+        </view>
+      </view>
+    </view>
+    <view style="height:120rpx;"></view>
+    <view class="footer acea-row row-right row-middle" wx:if="{{goname!='look'}}">
+      <view class="more"></view>
+      <view class="bnt cancel" bindtap="modify" data-status="0" wx:if="{{types == 0}}">一键改价</view>
+      <view class="bnt cancel" bindtap="modify" data-status="0" wx:if="{{types == -1}}">立即退款</view>
+      <view class="bnt cancel" bindtap="modify" data-status="1">订单备注</view>
+      <view class="bnt cancel" wx:if="{{orderInfo.pay_type === 'offline' && orderInfo.paid === 0}}" bindtap="offlinePay">确认付款</view>
+      <navigator class="bnt delivery" url='/pages/admin/order_deliver/index?order_id={{orderInfo.order_id}}' wx:if="{{types == 1}}" hover-class='none'>去发货</navigator>
+    </view>
+  </view>
+  <priceChange status="{{status}}" change="{{change}}" orderInfo="{{orderInfo}}"      bind:onChangeFun='onChangeFun' bind:getIndex='getIndex'  wx:if="{{orderInfo}}"></priceChange>
+  <authorize bind:onLoadFun='onLoadFun'></authorize>
