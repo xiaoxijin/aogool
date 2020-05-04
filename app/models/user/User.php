@@ -333,10 +333,51 @@ class User extends BaseModel
         $res1 = UserBill::income('获得推广佣金', $userInfoTwo['spread_uid'], 'now_money', 'brokerage', $brokeragePrice, $orderInfo['id'], $balance, $mark);
         //TODO 添加用户余额
         $res2 = self::bcInc($userInfoTwo['spread_uid'], 'brokerage_price', $brokeragePrice, 'uid');
+        //TODO 二级返佣成功 跳转三级返佣
+        $res = $res1 && $res2 && self::backOrderBrokerageThree($orderInfo, $open);
+        $open && self::checkTrans($res);
+        return $res;
+    }
+
+    /**
+     * TODO 三级推广
+     * @param $orderInfo
+     * @return bool
+     * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public static function backOrderBrokerageThree($orderInfo, bool $open = true)
+    {
+        //TODO 获取购买商品的用户
+        $userInfo = User::getUserInfo($orderInfo['uid']);
+        //TODO 获取上推广人
+        $userInfoTwo = User::getUserInfo($userInfo['spread_uid']);
+        //TODO 上推广人不存在 或者 上推广人没有上级  或者 当用用户上上级时自己  直接返回
+        if (!$userInfoTwo || !$userInfoTwo['spread_uid'] || $userInfoTwo['spread_uid'] == $orderInfo['uid']) return true;
+        //TODO 获取后台分销类型  1 指定分销 2 人人分销
+        if (!User::be(['uid' => $userInfoTwo['spread_uid'], 'is_promoter' => 1])) return true;
+        $cartId = is_string($orderInfo['cart_id']) ? json_decode($orderInfo['cart_id'], true) : $orderInfo['cart_id'];
+        $brokeragePrice = StoreProduct::getProductBrokerage($cartId, false);
+        //TODO 返佣金额小于等于0 直接返回不返佣金
+        if ($brokeragePrice <= 0) return true;
+        //TODO 获取上上级推广员信息
+        $spreadUserInfoTwo = User::getUserInfo($userInfoTwo['spread_uid']);
+        //TODO 获取上上级推广员返佣之后余额
+        $balance = bcadd($spreadUserInfoTwo['brokerage_price'], $brokeragePrice, 2);
+        $mark = '三级推广人' . $userInfo['nickname'] . '成功消费' . floatval($orderInfo['pay_price']) . '元,奖励推广佣金' . floatval($brokeragePrice);
+        $open && self::beginTrans();
+        //TODO 添加返佣记录
+        $res1 = UserBill::income('获得推广佣金', $userInfoTwo['spread_uid'], 'now_money', 'brokerage', $brokeragePrice, $orderInfo['id'], $balance, $mark);
+        //TODO 添加用户余额
+        $res2 = self::bcInc($userInfoTwo['spread_uid'], 'brokerage_price', $brokeragePrice, 'uid');
         $res = $res1 && $res2;
         $open && self::checkTrans($res);
         return $res;
     }
+
+
 
     /**
      * 获取推荐人 暂无使用
