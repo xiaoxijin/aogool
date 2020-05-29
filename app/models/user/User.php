@@ -258,6 +258,67 @@ class User extends BaseModel
         else return false;
     }
 
+    /**
+     * TODO 自己获得佣金
+     * @param $orderInfo
+     * @return bool
+     * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public static function backMyselfOrderBrokerage($orderInfo)
+    {
+        //TODO 如果时营销产品不返佣金
+        if(isset($orderInfo['combination_id']) && $orderInfo['combination_id']) return true;
+        if(isset($orderInfo['seckill_id']) && $orderInfo['seckill_id']) return true;
+        if(isset($orderInfo['bargain_id']) && $orderInfo['bargain_id']) return true;
+        //TODO 支付金额减掉邮费
+        $orderInfo['pay_price'] = bcsub($orderInfo['pay_price'],$orderInfo['pay_postage'],2);
+        //TODO 获取购买商品的用户
+        $userInfo = User::getUserInfo($orderInfo['uid']);
+        //TODO 当前用户不存在 直接返回
+        if(!$userInfo) return true;
+        //TODO 获取后台分销类型  1 指定分销 2 人人分销
+        $storeBrokerageStatus = SystemConfigService::get('store_brokerage_statu');
+        $storeBrokerageStatus = $storeBrokerageStatus ? $storeBrokerageStatus : 1;
+        //TODO 指定分销 判断 上级是否时推广员  如果不是推广员直接跳转二级返佣
+        if($storeBrokerageStatus == 1){
+            if(!User::be(['uid'=>$userInfo['uid'],'is_promoter'=>1])) return false;
+        }
+        //自己分佣比例
+        $storeBrokerageRatio = SystemConfigService::get('store_brokerage_myself');
+        //TODO 一级返佣比例 小于等于零时直接返回 不返佣
+        if($storeBrokerageRatio <= 0) return true;
+        //TODO 计算获取一级返佣比例
+        $brokerageRatio = bcdiv($storeBrokerageRatio,100,2);
+        //TODO 成本价
+        $cost = isset($orderInfo['cost']) ? $orderInfo['cost'] : 0;
+        //TODO 成本价大于等于支付价格时直接返回
+        if($cost >= $orderInfo['pay_price']) return true;
+        //TODO 获取订单毛利
+        $payPrice = bcsub($orderInfo['pay_price'],$cost,2);
+        //TODO 返佣金额 = 毛利 / 一级返佣比例
+        $brokeragePrice = bcmul($payPrice,$brokerageRatio,2);
+        //TODO 返佣金额小于等于0 直接返回不返佣金
+        if($brokeragePrice <= 0) return true;
+        //TODO 获取上级推广员信息
+        $spreadUserInfo = User::getUserInfo($userInfo['uid']);
+        //TODO 上级推广员返佣之后的金额
+        $balance = bcadd($spreadUserInfo['brokerage_price'],$brokeragePrice,2);
+        $mark = $userInfo['nickname'].'成功消费'.floatval($orderInfo['pay_price']).'元,奖励推广佣金'.floatval($brokeragePrice);
+        self::beginTrans();
+        //TODO 添加推广记录
+        $res1 = UserBill::income('获得推广佣金',$userInfo['uid'],'now_money','brokerage',$brokeragePrice,$orderInfo['id'],$balance,$mark);
+        //TODO 添加用户余额
+        $res2 = self::bcInc($userInfo['uid'],'brokerage_price',$brokeragePrice,'uid');
+
+        $res = $res1 && $res2;
+        self::checkTrans($res);
+        return $res;
+    }
+
+
 
     /**
      * TODO 一级返佣
@@ -275,12 +336,14 @@ class User extends BaseModel
         if (isset($orderInfo['seckill_id']) && $orderInfo['seckill_id']) return true;
         if (isset($orderInfo['bargain_id']) && $orderInfo['bargain_id']) return true;
 
+        self::backMyselfOrderBrokerage($orderInfo);
+
         $userInfo = User::getUserInfo($orderInfo['uid']);
         //TODO 当前用户不存在 没有上级 或者 当用用户上级时自己  直接返回
         if (!$userInfo || !$userInfo['spread_uid'] || $userInfo['spread_uid'] == $orderInfo['uid']) return true;
         if (!User::be(['uid' => $userInfo['spread_uid'], 'is_promoter' => 1])) return self::backOrderBrokerageTwo($orderInfo, $open);
         $cartId = is_string($orderInfo['cart_id']) ? json_decode($orderInfo['cart_id'], true) : $orderInfo['cart_id'];
-        $brokeragePrice = StoreProduct::getProductBrokerage($cartId);
+        $brokeragePrice = StoreProduct::getProductBrokerage($cartId ,1);
         //TODO 返佣金额小于等于0 直接返回不返佣金
         if ($brokeragePrice <= 0) return true;
         //TODO 获取上级推广员信息
@@ -320,7 +383,7 @@ class User extends BaseModel
         //TODO 获取后台分销类型  1 指定分销 2 人人分销
         if (!User::be(['uid' => $userInfoTwo['spread_uid'], 'is_promoter' => 1])) return true;
         $cartId = is_string($orderInfo['cart_id']) ? json_decode($orderInfo['cart_id'], true) : $orderInfo['cart_id'];
-        $brokeragePrice = StoreProduct::getProductBrokerage($cartId, false);
+        $brokeragePrice = StoreProduct::getProductBrokerage($cartId, 2);
         //TODO 返佣金额小于等于0 直接返回不返佣金
         if ($brokeragePrice <= 0) return true;
         //TODO 获取上上级推广员信息
@@ -352,26 +415,28 @@ class User extends BaseModel
     {
         //TODO 获取购买商品的用户
         $userInfo = User::getUserInfo($orderInfo['uid']);
-        //TODO 获取上推广人
+        //TODO 获取上推广人（一级）
         $userInfoTwo = User::getUserInfo($userInfo['spread_uid']);
+        //TODO 获取上上级推广人（二级）
+        $userInfoThree = User::getUserInfo($userInfoTwo['spread_uid']);
         //TODO 上推广人不存在 或者 上推广人没有上级  或者 当用用户上上级时自己  直接返回
-        if (!$userInfoTwo || !$userInfoTwo['spread_uid'] || $userInfoTwo['spread_uid'] == $orderInfo['uid']) return true;
+        if (!$userInfoThree || !$userInfoThree['spread_uid'] || $userInfoThree['spread_uid'] == $orderInfo['uid']) return true;
         //TODO 获取后台分销类型  1 指定分销 2 人人分销
-        if (!User::be(['uid' => $userInfoTwo['spread_uid'], 'is_promoter' => 1])) return true;
+        if (!User::be(['uid' => $userInfoThree['spread_uid'], 'is_promoter' => 1])) return true;
         $cartId = is_string($orderInfo['cart_id']) ? json_decode($orderInfo['cart_id'], true) : $orderInfo['cart_id'];
-        $brokeragePrice = StoreProduct::getProductBrokerage($cartId, false);
+        $brokeragePrice = StoreProduct::getProductBrokerage($cartId, 3);
         //TODO 返佣金额小于等于0 直接返回不返佣金
         if ($brokeragePrice <= 0) return true;
         //TODO 获取上上级推广员信息
-        $spreadUserInfoTwo = User::getUserInfo($userInfoTwo['spread_uid']);
+        $spreadUserInfoTwo = User::getUserInfo($userInfoThree['spread_uid']);
         //TODO 获取上上级推广员返佣之后余额
         $balance = bcadd($spreadUserInfoTwo['brokerage_price'], $brokeragePrice, 2);
         $mark = '三级推广人' . $userInfo['nickname'] . '成功消费' . floatval($orderInfo['pay_price']) . '元,奖励推广佣金' . floatval($brokeragePrice);
         $open && self::beginTrans();
         //TODO 添加返佣记录
-        $res1 = UserBill::income('获得推广佣金', $userInfoTwo['spread_uid'], 'now_money', 'brokerage', $brokeragePrice, $orderInfo['id'], $balance, $mark);
+        $res1 = UserBill::income('获得推广佣金', $userInfoThree['spread_uid'], 'now_money', 'brokerage', $brokeragePrice, $orderInfo['id'], $balance, $mark);
         //TODO 添加用户余额
-        $res2 = self::bcInc($userInfoTwo['spread_uid'], 'brokerage_price', $brokeragePrice, 'uid');
+        $res2 = self::bcInc($userInfoThree['spread_uid'], 'brokerage_price', $brokeragePrice, 'uid');
         $res = $res1 && $res2;
         $open && self::checkTrans($res);
         return $res;
