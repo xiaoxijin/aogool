@@ -327,6 +327,7 @@ class User extends AuthController
         $f = array();
         $f[] = Form::input('uid', '用户编号', $user->getData('uid'))->disabled(1);
         $f[] = Form::input('real_name', '真实姓名', $user->getData('real_name'));
+        $f[] = Form::input('spread_uid', '上级UID', $user->getData('spread_uid'));
         $f[] = Form::text('phone', '手机号', $user->getData('phone'));
         $f[] = Form::date('birthday', '生日', $user->getData('birthday') ? date('Y-m-d', $user->getData('birthday')) : 0);
         $f[] = Form::input('card_id', '身份证号', $user->getData('card_id'));
@@ -338,12 +339,60 @@ class User extends AuthController
         return $this->fetch('public/form-builder');
     }
 
+    public function create()
+    {
+        $f = array();
+        $f[] = Form::input('phone','手机号码');
+        $f[] = Form::input('pwd','密码');
+        $f[] = Form::input('real_name','真实姓名');
+        $f[] = Form::input('spread_uid', '上级UID',0);
+        $f[] = Form::textarea('mark','用户备注');
+        $f[] = Form::radio('is_promoter','推广员',0)->options([['value'=>1,'label'=>'开启'],['value'=>0,'label'=>'关闭']]);
+        $f[] = Form::radio('status','状态',1)->options([['value'=>1,'label'=>'开启'],['value'=>0,'label'=>'锁定']]);
+        $form = Form::make_post_form('添加用户',$f,Url::buildUrl('save'),5);
+        $this->assign(compact('form'));
+        return $this->fetch('public/form-builder');
+    }
+
+
+    public function save()
+    {
+        $data = Util::postMore([
+            ['phone',0],
+            'pwd',
+            ['spread_uid',0],
+            ['is_promoter',1],
+            ['real_name',''],
+            ['mark',''],
+            ['integration_status',0],
+            ['integration',0],
+            ['status',0],
+        ]);
+        $edit['account']= trim($data['phone']);
+        $edit['phone']=$data['phone'];
+        $edit['spread_uid']=$data['spread_uid'];
+        if(!$data['pwd'])Json::fail('请输入密码');
+        $edit['pwd']= md5($data['pwd']);
+        $edit['status'] = $data['status'];
+        $edit['real_name'] = $data['real_name'];
+        $edit['nickname'] = $data['real_name'];
+        $edit['mark'] = $data['mark'];
+        $edit['add_time']=time();
+        $edit['is_promoter'] = $data['is_promoter'];
+        $res = UserModel::create($edit);
+        \app\models\user\WechatUser::create(array('uid'=>$res['uid'],'nickname'=>$edit['real_name'],'add_time'=>$edit['add_time']));
+        if($res) return Json::successful('创建成功!');
+        else return Json::fail('创建失败');
+    }
+
+
     public function update($uid)
     {
         $data = Util::postMore([
             ['money_status', 0],
             ['is_promoter', 1],
             ['real_name', ''],
+            ['spread_uid', 0],
             ['phone', 0],
             ['card_id', ''],
             ['birthday', ''],
@@ -408,6 +457,7 @@ class User extends AuthController
         }
         $edit['status'] = $data['status'];
         $edit['real_name'] = $data['real_name'];
+        $edit['spread_uid'] = $data['spread_uid'];
         $edit['phone'] = $data['phone'];
         $edit['card_id'] = $data['card_id'];
         $edit['birthday'] = strtotime($data['birthday']);
@@ -418,6 +468,18 @@ class User extends AuthController
         if ($res1 && $res2 && $res3) $res = true;
         else $res = false;
         BaseModel::checkTrans($res);
+
+        if($res){
+            if($user['spread_uid'] != $data['spread_uid']){
+                //新的下级用户数
+                $newUserNum = UserModel::where('spread_uid',$data['spread_uid'])->count();
+                UserModel::where('uid',$data['spread_uid'])->update(array('spread_count'=>$newUserNum));
+                //老的用户
+                $oldUserNum = UserModel::where('spread_uid',$user['spread_uid'])->count();
+                UserModel::where('uid',$user['spread_uid'])->update(array('spread_count'=>$oldUserNum));
+            }
+        }
+
         if ($res) return Json::successful('修改成功!');
         else return Json::fail('修改失败');
     }

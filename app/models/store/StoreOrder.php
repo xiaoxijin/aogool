@@ -15,15 +15,19 @@ use crmeb\traits\ModelTrait;
 use think\facade\Log;
 use app\models\system\SystemStore;
 use app\models\routine\RoutineTemplate;
+use think\Route;
 use app\models\user\{
     User, UserAddress, UserBill, WechatUser
 };
 use crmeb\services\{
     SystemConfigService, WechatTemplateService, workerman\ChannelService
 };
-use crmeb\repositories\{
-    GoodsRepository, PaymentRepositories, OrderRepository, ShortLetterRepositories, UserRepository
-};
+use crmeb\repositories\{CustomerRepository,
+    GoodsRepository,
+    PaymentRepositories,
+    OrderRepository,
+    ShortLetterRepositories,
+    UserRepository};
 use app\admin\model\system\ShippingTemplates;
 
 /**
@@ -754,6 +758,33 @@ class StoreOrder extends BaseModel
         StoreOrderStatus::status($oid, 'pay_success', '用户付款成功');
         $now_money = User::where('uid', $order['uid'])->value('now_money');
         UserBill::expend('购买商品', $order['uid'], 'now_money', 'pay_money', $order['pay_price'], $order['id'], $now_money, '支付' . floatval($order['pay_price']) . '元购买商品');
+
+        /*$openid = WechatUser::uidToOpenid($order['uid'],'openid');
+        $routineOpenid = WechatUser::uidToOpenid($order['uid'],'routine_openid');
+        try{
+            if($openid){
+                WechatTemplateService::sendTemplate($openid,WechatTemplateService::ORDER_PAY_SUCCESS, [
+                    'first' => '亲，您购买的商品已支付成功',
+                    'keyword1' => $orderId,
+                    'keyword2' => $order['pay_price'],
+                    'remark' => '点击查看订单详情'
+                ], Route::buildUrl('order/detail/' . $order['order_id'],true,true));
+                CustomerRepository::sendOrderPaySuccessCustomerService($order,1);
+                WechatTemplateService::sendAdminNoticeTemplate(WechatTemplateService::ORDER_CREATE,[
+                    'first' => '亲，您有一个订单',
+                    'keyword1' => date('Y/m/d H:i',time()),
+                    'keyword2' => $order['uid'],
+                    'keyword3' => $orderId,
+                    'remark' => '请及时处理'
+                ]);
+            }elseif ($routineOpenid){
+                RoutineTemplate::sendOrderSuccess($formId,$orderId);
+                CustomerRepository::sendOrderPaySuccessCustomerService($order,0);
+            }
+            ChannelService::instance()->send('NEW_ORDER', ['order_id'=>$orderId]);
+        }catch (\Exception $e){}
+*/
+
         //支付成功后
         event('OrderPaySuccess', [$order, $formId]);
         $res = $res1 && $resPink;

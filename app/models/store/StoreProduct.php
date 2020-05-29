@@ -502,11 +502,14 @@ class StoreProduct extends BaseModel
      * @param bool $type true = 一级返佣, fasle = 二级返佣
      * @return int|string
      */
-    public static function getProductBrokerage(array $cartId, bool $type = true)
+    public static function getProductBrokerage(array $cartId, int  $backLevel = 0, bool $type = true)
     {
         $cartInfo = StoreOrderCartInfo::whereIn('cart_id', $cartId)->column('cart_info');
         $oneBrokerage = 0;//一级返佣金额
         $twoBrokerage = 0;//二级返佣金额
+
+        $threeBrokerage = 0;//三级指定返佣金额
+
         $sumProductPrice = 0;//非指定返佣商品总金额
         foreach ($cartInfo as $value) {
             $product = json_decode($value, true);
@@ -517,6 +520,7 @@ class StoreProduct extends BaseModel
                 if (isset($productInfo['is_sub']) && $productInfo['is_sub'] == 1) {
                     $oneBrokerage = bcadd($oneBrokerage, bcmul($cartNum, $productInfo['attrInfo']['brokerage'] ?? 0, 2), 2);
                     $twoBrokerage = bcadd($twoBrokerage, bcmul($cartNum, $productInfo['attrInfo']['brokerage_two'] ?? 0, 2), 2);
+                    $threeBrokerage = 0;
                 } else {
                     //比例返佣
                     if (isset($productInfo['attrInfo'])) {
@@ -527,7 +531,50 @@ class StoreProduct extends BaseModel
                 }
             }
         }
-        if ($type) {
+        if($backLevel==1) {
+            //获取后台一级返佣比例
+            $storeBrokerageRatio = sys_config('store_brokerage_ratio');
+            //一级返佣比例 小于等于零时直接返回 不返佣
+            if ($storeBrokerageRatio <= 0) {
+                return $oneBrokerage;
+            }
+            //计算获取一级返佣比例
+            $brokerageRatio = bcdiv($storeBrokerageRatio, 100, 2);
+            $sumProductPrice = bcsub($sumProductPrice, $productInfo['cost'],2);//计算订单毛利
+            $brokeragePrice = bcmul($sumProductPrice, $brokerageRatio, 2);
+            //固定返佣 + 比例返佣 = 一级总返佣金额
+            return bcadd($oneBrokerage, $brokeragePrice, 2);
+        }else if($backLevel ==2) {
+            //获取后台二级返佣比例
+            $storeBrokerageRatio = sys_config('store_brokerage_two');
+            //二级返佣比例 小于等于零时直接返回 不返佣
+            if ($storeBrokerageRatio <= 0) {
+                return $twoBrokerage;
+            }
+            //计算获取二级返佣比例
+            $brokerageRatio = bcdiv($storeBrokerageRatio, 100, 2);
+            $sumProductPrice = bcsub($sumProductPrice, $productInfo['cost'],2);//计算订单毛利
+            $brokeragePrice = bcmul($sumProductPrice, $brokerageRatio, 2);
+            //固定返佣 + 比例返佣 = 二级总返佣金额
+            return bcadd($twoBrokerage, $brokeragePrice, 2);
+        }else if($backLevel == 3) {
+            //获取后台三级返佣比例
+            $storeBrokerageRatio = sys_config('store_brokerage_three');
+            //三级返佣比例 小于等于零时直接返回 不返佣
+            if ($storeBrokerageRatio <= 0) {
+                return $threeBrokerage;
+            }
+            //计算获取三级返佣比例
+            $brokerageRatio = bcdiv($storeBrokerageRatio, 100, 2);
+            $sumProductPrice = bcsub($sumProductPrice, $productInfo['cost'],2);//计算订单毛利
+            $brokeragePrice = bcmul($sumProductPrice, $brokerageRatio, 2);
+            //固定返佣 + 比例返佣 = 三级总返佣金额
+            return bcadd($threeBrokerage, $brokeragePrice, 2);
+        }else{
+            return true;
+        }
+
+        /*if ($type) {
             //获取后台一级返佣比例
             $storeBrokerageRatio = sys_config('store_brokerage_ratio');
             //一级返佣比例 小于等于零时直接返回 不返佣
@@ -551,7 +598,7 @@ class StoreProduct extends BaseModel
             $brokeragePrice = bcmul($sumProductPrice, $brokerageRatio, 2);
             //固定返佣 + 比例返佣 = 二级总返佣金额
             return bcadd($twoBrokerage, $brokeragePrice, 2);
-        }
+        }*/
 
     }
 
